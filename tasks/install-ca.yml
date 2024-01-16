@@ -1,0 +1,15 @@
+---
+- name: Transfer the CA
+  copy:
+    src: "{{ ca_cert_file }}"
+    dest: /usr/share/pki/ca-trust-source/anchors
+  become: true
+
+- name: Update system CA trust
+  shell: "update-ca-trust extract"
+  register: update
+  become: true
+
+- fail:
+    msg: "system CA trust update failed"
+  when: update.rc

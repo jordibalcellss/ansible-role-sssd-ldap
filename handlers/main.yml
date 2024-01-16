@@ -1,0 +1,43 @@
+---
+- name: Run authconfig
+  shell: "authconfig --enablesssd --enablesssdauth --enablemkhomedir --updateall"
+  register: auth
+  become: true
+  when:
+    - ansible_facts.distribution == 'CentOS'
+    - ansible_facts.distribution_major_version == '7'
+  listen: "Authconfig and restart"
+
+- name: Run authselect
+  shell: "authselect select sssd with-mkhomedir --force"
+  become: true
+  register: auth
+  when:
+    - ansible_facts.distribution_file_variety == 'RedHat'
+    - ansible_facts.distribution != 'CentOS'
+  listen: "Authconfig and restart"
+
+- fail:
+    msg: "sssd authentication failed"
+  when: auth.rc
+  listen: "Authconfig and restart"
+
+- name: Start oddjobd
+  service:
+    name: oddjobd
+    state: started
+  when: not reboot
+  listen: "Authconfig and restart"
+
+- name: Start sssd
+  service:
+    name: sssd
+    state: started
+  when: not reboot
+  listen: "Authconfig and restart"
+
+- name: Reboot
+  reboot:
+  become: true
+  when: reboot
+  listen: "Authconfig and restart"

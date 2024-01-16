@@ -1,0 +1,14 @@
+---
+domain: example.com
+
+ldap:
+  uri: ldaps://ldap.example.com:636/ 
+  base: dc=example,dc=com
+  bind:
+    dn: cn=ldapadm,dc=example,dc=com
+    password:
+
+ca_cert_file_install: true
+ca_cert_file: our_CA.crt
+
+sudoers_group: admins

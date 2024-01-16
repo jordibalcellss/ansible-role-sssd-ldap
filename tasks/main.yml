@@ -1,0 +1,42 @@
+---
+- name: Provide sssd-ldap
+  yum:
+    name:
+      - sssd-ldap
+      - oddjob-mkhomedir
+    state: present
+  become: true
+
+- name: Enable sssd
+  service:
+    name: sssd
+    enabled: true
+  become: true
+
+- name: Enable oddjobd
+  service:
+    name: oddjobd
+    enabled: true
+  become: true
+
+- name: Edit sssd conf file
+  template:
+    src: sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: 0600
+  become: true
+  notify: Authconfig and restart
+
+- import_tasks: install-ca.yml
+  when: ca_cert_file_install
+
+- name: Grant a LDAP group sudo ability
+  template:
+    src: sudoers.j2
+    dest: "/etc/sudoers.d/{{ sudoers_group }}"
+    owner: root
+    group: root
+    mode: 0440
+  become: true
